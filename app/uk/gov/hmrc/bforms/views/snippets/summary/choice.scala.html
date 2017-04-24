@@ -5,11 +5,11 @@
 @(fieldValue: FieldValue, selections: List[String])
 
 <tr>
-  <td>
+  <!-- td>
     @localisation(fieldValue.label)
-  </td>
+  </td -->
 
-  <td>
+  <td colspan="2">
     @selections.map{ selection => @selection<br /> }
   </td>
 </tr>
