@@ -8,8 +8,8 @@
 
 
 <fieldset>
-  <legend class="visuallyhidden">
-    Add @localisation(fieldValue.label)
+  <legend class="h3-heading @if(groupField.repeatsMax.isDefined) {visuallyhidden}">
+    @localisation(fieldValue.label)
   </legend>
 
   @if(groupField.repeatsMax.isDefined) {
