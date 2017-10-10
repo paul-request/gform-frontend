@@ -6,17 +6,15 @@
 @import uk.gov.hmrc.gform.sharedmodel.formtemplate.FormComponent
 @import uk.gov.hmrc.gform.validation.{FormFieldValidationResult, ValidationUtil}
 @import uk.gov.hmrc.gform.views.html._
+@import uk.gov.hmrc.gform.views.summary.TextFormatter
 
 
 @import uk.gov.hmrc.gform.validation.{FormFieldValidationResult, ValidationUtil}
 @(fieldValue: FormComponent, text: Text, prepop: String, validationResult: Option[FormFieldValidationResult], index: Int, sectionTitle: String)
 
-@isSterling = @{
-    fieldValue.`type` match {
-        case Text(Sterling, _) => true
-        case _ => false
-    }
-}
+@isSterling = @{TextFormatter.isSterling(fieldValue)}
+
+@isUnit = @{TextFormatter.isUnit(fieldValue)}
 
 <div class="form-group @if(validationResult.map(_.isOk).contains(false)) {form-field-group--error}">
     @* TODO: What should total style be? *@
@@ -39,15 +37,7 @@
         errors.map(e => errorInline(e, e, Seq("")))
     }
 
-    @if(!isSterling) {
-    <input
-            type="text"
-            name="@fieldValue.id"
-            @if(!fieldValue.editable) { readonly="" }
-            id="@fieldValue.id"
-            value="@validationResult.flatMap(_.getCurrentValue).getOrElse(prepop)"
-            class="form-control @if(fieldValue.derived){js-hidden}">
-    } else {
+    @if(isSterling) {
     <span class="input-currency">
         <input
                 type="text"
@@ -57,5 +47,25 @@
                 value="@validationResult.flatMap(_.getCurrentValue).getOrElse(prepop)"
                 class="form-control input--no-spinner input--left-padding input--small">
     </span>
+    }
+
+    @if(isUnit.isUnit){
+        <input
+            type="text"
+            name="@fieldValue.id"
+            @if(!fieldValue.editable) { readonly="" }
+            id="@fieldValue.id"
+            value="@validationResult.flatMap(_.getCurrentValue).getOrElse(prepop)"
+            class="form-control input--no-spinner input--left-padding input--small"> @isUnit.unit
+    }
+
+    @if(!isSterling && !isUnit.isUnit){
+    <input
+            type="text"
+            name="@fieldValue.id"
+            @if(!fieldValue.editable) { readonly="" }
+            id="@fieldValue.id"
+            value="@validationResult.flatMap(_.getCurrentValue).getOrElse(prepop)"
+            class="form-control @if(fieldValue.derived){js-hidden}">
     }
 </div>
