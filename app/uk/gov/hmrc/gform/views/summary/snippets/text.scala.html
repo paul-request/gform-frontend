@@ -41,7 +41,7 @@
       @if(!isSterling) {
           @currentValue
       } else {
-          @currentValue
+          &pound;@currentValue
       }
   </td>
 </tr>
@@ -55,10 +55,7 @@
         @if(!isSterling) {
             @currentValue
         } else {
-           <span class="input-currency input--left-padding">
-            @currentValue
-</span>
-
+           &pound;@currentValue
         }
     </td>
 

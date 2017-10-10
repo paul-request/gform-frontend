@@ -10,14 +10,14 @@
 @(fieldValue: FormComponent, snippets: List[Html], orientation: Orientation, isLabel: Boolean)
 
 @if(isLabel){
-<tr>
+<tr class="table__row--bold">
     <td colspan="3">
         @localisation(fieldValue.shortName.getOrElse(fieldValue.label))
     </td>
 
 </tr>
 }
-      @{
-         snippets
-      }
 
+@{
+   snippets
+}
