@@ -3,21 +3,21 @@
 @import uk.gov.hmrc.play.views.html.helpers._
 @import uk.gov.hmrc.gform.views.html.localisation
 @import views.html.helper.CSRF
+@import uk.gov.hmrc.gform.views.summary.TextFormatter
 @import scala.concurrent.Future
-
 @import uk.gov.hmrc.gform.sharedmodel.formtemplate.Orientation
 @import uk.gov.hmrc.gform.sharedmodel.formtemplate._
-@(fieldValue: FormComponent, snippets: List[Html], orientation: Orientation, isLabel: Boolean)
+@import uk.gov.hmrc.gform.validation.FormFieldValidationResult
+@(fieldValue: FormComponent, fields: Option[FormFieldValidationResult], isLabel: Boolean, labelHtml: Html)
 
-@if(isLabel){
+@currentValue = @{TextFormatter.formatText(fieldValue.`type`, fields)}
+
 <tr>
-    <td colspan="3">
-        @localisation(fieldValue.shortName.getOrElse(fieldValue.label))
+
+    @labelHtml
+
+    <td colspan=@if(isLabel){"2"}else{"3"}>
+        @currentValue
     </td>
 
 </tr>
-}
-      @{
-         snippets
-      }
-

@@ -84,22 +84,33 @@ object SummaryRenderingService {
 
       def valueToHtml(fieldValue: FormComponent): Future[Html] = {
 
-        def groupToHtml(fieldValue: FormComponent, presentationHint: List[PresentationHint]): Future[Html] = fieldValue.`type` match {
-          case groupField: Group if presentationHint contains SummariseGroupAsGrid =>
-            val htmlList: Future[List[Html]] =
-              repeatService.getAllFieldsInGroupForSummary(fieldValue, groupField).map(y => for {
-                group <- y
-                value = group.map(validate)
-              } yield {
-                group_grid(fieldValue, value)
-              })
-            htmlList.map(y => group(fieldValue, y, groupField.orientation))
-          case groupField @ Group(_, orientation, _, _, _, _) =>
-            for {
-              fvs <- repeatService.getAllFieldsInGroupForSummary(fieldValue, groupField)
-              htmlList <- Future.sequence(fvs.flatMap(_.map { case (fv: FormComponent) => valueToHtml(fv) }.toList))
-            } yield group(fieldValue, htmlList, orientation)
-          case _ => valueToHtml(fieldValue)
+        def groupToHtml(fieldValue: FormComponent, presentationHint: List[PresentationHint]): Future[Html] = {
+          val isLabel = fieldValue.shortName.getOrElse(fieldValue.label).nonEmpty
+          fieldValue.`type` match {
+            case groupField: Group if presentationHint.contains(SummariseGroupAsGrid) && groupField.repeatsMax.isDefined =>
+              val htmlList: Future[List[Html]] =
+                repeatService.getAllFieldsInGroupForSummary(fieldValue, groupField).map(y => for {
+                  group <- y
+                  value = group.map(validate)
+                } yield {
+                  group_grid(fieldValue, value, isLabel)
+                })
+              htmlList.map(y => group(fieldValue, y, groupField.orientation, isLabel))
+            case groupField: Group if presentationHint.contains(SummariseGroupAsGrid) =>
+              val value = groupField.fields.filter { y =>
+                val x = validate(y)
+                x.isDefined
+              }.map(validate)
+              if (value.nonEmpty) {
+                Future.successful(group_grid(fieldValue, value, isLabel))
+              } else Future.successful(Html(""))
+            case groupField @ Group(_, orientation, _, _, _, _) =>
+              for {
+                fvs <- repeatService.getAllFieldsInGroupForSummary(fieldValue, groupField)
+                htmlList <- Future.sequence(fvs.flatMap(_.map { case (fv: FormComponent) => valueToHtml(fv) }.toList))
+              } yield group(fieldValue, htmlList, orientation, isLabel)
+            case _ => valueToHtml(fieldValue)
+          }
         }
 
         fieldValue.`type` match {
@@ -150,5 +161,10 @@ object SummaryRenderingService {
           snippetsF.map(snippets =>
             SummaryForRender(snippets, Html(javascript), sections.size)))
     }
+  }
+
+  private def groupGridRender(formComponent: FormComponent, groupField: Group, list: List[Option[FormFieldValidationResult]]) = {
+    val label = formComponent.shortName.getOrElse(formComponent.label)
+    val isLabel = label.isEmpty
   }
 }
